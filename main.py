@@ -6,12 +6,19 @@ Se van a considerar todos los productos y bienes que se encuentran
 en una veterinaria, así como tambien llevar un control en el
 área de gestión de la misma.
 
+La nomenclatura para los códigos de barra es: NNMMPP, donde NN son
+las dos primeras letras del nombre, MM las dos primeras letras de la 
+marca y PP los dos primeros dígitos del precio (En caso de ser 
+unidigital se pone un 0 antes)
+
 Dentro de los bienes se considera todo aquel producto que pueda ser
 vendido y almacenado, como servicios se consideran servicios médicos
 y servicios de estética.
 
 En la parte de gestión se lleva un control sobre el personal, 
 tanto personal administrativo como el personal médico
+
+
 
 """
 
