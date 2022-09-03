@@ -1,4 +1,4 @@
-class Producto:
+class Producto():
     """
     La clase Producto crea y define un producto
     
@@ -16,7 +16,6 @@ class Producto:
         a la que se le asignará una llave, de esta forma creando el 
         atributo caracteristicas (dict)
         """
-
         self.codigoDeBarras = codigoDeBarras       
         self._cantidadEnAlmacen = cantidadEnAlmacen
         self.caracteristicas = dict()
@@ -25,6 +24,11 @@ class Producto:
                         precio])  
         self.caracteristicas[self.codigoDeBarras] = valores
 
+    def __str__(self:object) -> str:
+        return str(self.caracteristicas)
+
+    def __getitem__(self:object, key:str) -> dict:
+        return getattr(self, key)
 
     def descripcion(self) -> dict:
         return self.caracteristicas
