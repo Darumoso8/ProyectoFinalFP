@@ -49,10 +49,20 @@ class PersonalAdministrativo(Personal):
     atributo extra la contraseña (str) para el inicio de sesión"""
 
     def __init__(self:object, nombre:str, correo:str,
-                numeroDeTelefono:str, contrasena:str) -> None:
-        super().__init__(nombre, correo, numeroDeTelefono)
+                numeroDeTelefono:str, contrasena:str,
+                curp:str) -> None:
+        super().__init__(nombre, correo, numeroDeTelefono, curp)
         self.__contrasena = contrasena
     
+    def __str__(self:object) -> str:
+        return str([self.nombre, 
+                    self.correo,
+                    self.numeroDeTelefono,
+                    self.curp])
+
+    def __getitem__(self:object, key:str) -> dict:
+        return getattr(self, key)
+        
     def registrar(self: object, registo: list) -> None:
         """El método registrar almacena los nombres del personal
         administrativo en una lista"""

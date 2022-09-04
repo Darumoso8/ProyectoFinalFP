@@ -1,8 +1,12 @@
 import psycopg2
 import psycopg2.extras
-from Personal import PersonalMedico
+from Personal import PersonalAdministrativo, PersonalMedico
 from Producto import *
 
+"""
+Aqui se almacenan los valores necesarios para establecer una conexión
+con la base de datos
+"""
 hostname = "localhost"
 database = "ProyectoFinal"
 username = "postgres"
@@ -11,12 +15,21 @@ port_id = 5432
 lista = []
 
 def crearCodigoDeBarras(nombre, marca, precio):
+    '''
+    La función crea el código de barras siguiendo la siguiente regla: 
+    NNMMPP, donde NN son las dos primeras letras del nombre, MM las
+    dos primeras letras de la marca y PP los dos primeros dígitos
+    del precio (En caso de ser unidigital se pone un 0 antes)
+    '''
     precio = str(precio)
     if len(precio) == 1:
         precio = '0' + precio
     return nombre[0:2].upper() + marca[0:2].upper() + precio[0:2]
 
 def inicializarTabla():
+    '''
+    
+    '''
     with psycopg2.connect(host = hostname, 
                             dbname = database, 
                             user = username, 
@@ -132,6 +145,7 @@ def venderProducto(codigo_de_barras, lista, cantidad):
                     print('ERROR! Ingrese números válidos')
             else:
                 print("Ese codigo de barras no existe")
+    conn.close()
 
 def comprarProducto(codigo_de_barras, lista, cantidad):
     actualizarProducto = 'UPDATE productos SET cantidad_en_almacen = cantidad_en_almacen + %s WHERE codigo_de_barras = %s'
@@ -154,6 +168,7 @@ def comprarProducto(codigo_de_barras, lista, cantidad):
                     print('ERROR! Ingrese números válidos')
             else:
                 print("Ese codigo de barras no existe")
+    conn.close()
 
 def inicializarTablaPersonalMedico():
     with psycopg2.connect(host = hostname, 
@@ -257,8 +272,125 @@ def darDeBajaMedico(curp, lista):
                     print('ERROR! Ingrese valores válidos')
             else:
                 print("Ese curp no existe")
+    conn.close()
 
+def inicializarTablaPersonalAdministrativo():
+    with psycopg2.connect(host = hostname, 
+                            dbname = database, 
+                            user = username, 
+                            password = pwd, 
+                            port = port_id) as conn:
 
+        with conn.cursor(cursor_factory = psycopg2.extras.DictCursor) as cur:
+
+            cur.execute("DROP TABLE IF EXISTS personalad")
+            crear_tabla = """ CREATE TABLE IF NOT EXISTS personalad (
+                            curp                    text PRIMARY KEY NOT NULL, 
+                            nombre                  text NOT NULL,
+                            correo                  text NOT NULL,
+                            numero_de_telefono      text NOT NULL,
+                            contrasena              text NOT NULL )"""
+
+            cur.execute(crear_tabla)
+
+            insertar_informacion = "INSERT INTO personalad (curp, \
+                                    nombre, correo, numero_de_telefono, \
+                                    contrasena) \
+                                    VALUES (%s, %s, %s, %s, %s)"
+
+            insertar_valores = [("CURP1",   "Cristan Patiño",      "correoad@1.com",   "5539403432",    "12345"),
+                                ("CURP2",   "Marta Mijares",	   "correoad@2.com",   "5513296528",	"12345"),
+                                ("CURP3",   "Josue Ochoa",         "correoad@3.com",   "5578385839",    "12345")]
+            cur.executemany(insertar_informacion, insertar_valores)                    
+    conn.close()
+
+def recopilarAdministrativos():
+    listaNueva = []
+    with psycopg2.connect(host = hostname, 
+                            dbname = database, 
+                            user = username, 
+                            password = pwd, 
+                            port = port_id) as conn:
+        with conn.cursor(cursor_factory = psycopg2.extras.DictCursor) as cur:
+            cur.execute("SELECT * FROM PERSONALAD")      
+            for i in cur.fetchall():
+                ejemplo = PersonalAdministrativo(
+                            i["nombre"],
+                            i["correo"],
+                            i["numero_de_telefono"],
+                            i["contrasena"], 
+                            i["curp"])
+                listaNueva.append(ejemplo)
+    conn.close()
+    return listaNueva
+
+def registrarNuevoAdministrativo(curp, nombre, correo, numero_de_telefono, contrasena):
+    curps = []
+    lista = recopilarAdministrativos()
+    for i in range(len(lista)):
+        curps.append(lista[i].curp)
+
+    with psycopg2.connect(host = hostname, 
+                            dbname = database, 
+                            user = username, 
+                            password = pwd, 
+                            port = port_id) as conn:
+    
+        with conn.cursor(cursor_factory = psycopg2.extras.DictCursor) as cur:
+
+            if curp not in curps:
+                insertar_informacion = "INSERT INTO personalad (curp, \
+                                    nombre, correo, numero_de_telefono, \
+                                    contrasena) \
+                                    VALUES (%s, %s, %s, %s, %s)"
+                  
+                insertar_valores = (
+                                curp, nombre, 
+                                correo, numero_de_telefono, contrasena)
+                try:
+                    cur.execute(insertar_informacion, insertar_valores)
+                except:
+                    print("ERROR! Ingrese valores válidos")
+            else:
+                print("Ya existe un administrativo con este curp")
+    conn.close()
+
+def darDeBajaAdministrativo(curp, lista):
+    borrarAdministrativo = 'DELETE FROM personalad WHERE curp = %s'
+    curps = []
+
+    for i in range(len(lista)):
+        curps.append(lista[i].curp)
+        
+    with psycopg2.connect(host = hostname, 
+                            dbname = database, 
+                            user = username, 
+                            password = pwd, 
+                            port = port_id) as conn:
+    
+        with conn.cursor(cursor_factory = psycopg2.extras.DictCursor) as cur:
+            if curp in curps:
+                try:
+                    cur.execute(borrarAdministrativo, (curp,))
+                except:
+                    print('ERROR! Ingrese valores válidos')
+            else:
+                print("Ese curp no existe")
+    conn.close()
+
+def cambiarContrasena(curp, nuevaContrasena):
+    actualizarPersonalad = 'UPDATE personalad SET contrasena = %s WHERE curp = %s'
+  
+    with psycopg2.connect(host = hostname, 
+                            dbname = database, 
+                            user = username, 
+                            password = pwd, 
+                            port = port_id) as conn:
+    
+        with conn.cursor(cursor_factory = psycopg2.extras.DictCursor) as cur:
+            cur.execute(actualizarPersonalad, (nuevaContrasena, curp,))
+
+    conn.close()
 
                 
             
