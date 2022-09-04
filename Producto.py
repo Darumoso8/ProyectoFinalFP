@@ -33,6 +33,9 @@ class Producto():
     def descripcion(self) -> dict:
         return self.caracteristicas
 
+    def darCantidadEnAlmacen(self:object):
+        return self._cantidadEnAlmacen       
+
     """
     Las funciones definidas como darNombre, darMarca y dar Precio
     retornan el atributo solicitado a partir de la llave y de su 
@@ -46,5 +49,6 @@ class Producto():
         return self.caracteristicas[self.codigoDeBarras][1]
 
     def darPrecio(self:object) -> int:
-        return self.caracteristicas[self.codigoDeBarras][2]        
+        return self.caracteristicas[self.codigoDeBarras][2] 
+
 

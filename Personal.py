@@ -13,7 +13,7 @@ class Personal:
         self.correo = correo
         self.numeroDeTelefono = numeroDeTelefono
     
-    def registrar(self:object, registo: list) -> None:
+    def registrar(self:object, registo:list) -> None:
         pass
 
 

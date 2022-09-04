@@ -24,11 +24,12 @@ from Producto import *
 from Personal import *
 from conexion import *
 
+inicializarTabla()
 almacen = recopilarDatos()
 
 while True:
     print("1- Agregar producto")
-    print("2- Eliminar producto")
+    print("2- Vender producto")
     print("3- Combrobar existencia de producto")
     print("4- Ver almacen")
     opcion = input("Eliga su opcion: ")
@@ -39,17 +40,29 @@ while True:
         precio = int(input("Ingrese el precio: "))
         cantidad = int(input("Ingrese la cantidad: "))
         agregarProductos(nombre, marca, precio, cantidad)
-        break
+        almacen = recopilarDatos()
+
+    elif opcion == '2':
+        codigo = input("Ingrese el codigo de barras: ")
+        cantidad = input("Ingrese cantidad: ")
+        venderProducto(codigo, almacen, cantidad)
+        almacen = recopilarDatos()
+
+    elif opcion == '3':
+        codigo = input("Ingrese el código de barras que quiera comprobar: ")
+        for i in almacen:
+            if i["codigoDeBarras"] == codigo:
+                print(f'Hay {i["_cantidadEnAlmacen"]} {i.darNombre()} de la marca {i.darMarca()} en el almacen')
 
     elif opcion == '4':
-        print(almacen)
+        for i in almacen: 
+            print(i.descripcion())
+        
 
 
 
 
 
-for i in almacen: 
-    print(i.descripcion())
 
 
 
