@@ -4,14 +4,15 @@ class Personal:
     veterinaria
     
     Los datos almacenados para cada trabajador son: nombre (str),
-    correro electronico (str) y su número de telefono (str)
+    correro electronico (str), curp (str) y su número de telefono (str)
      """
 
     def __init__(self:object, nombre:str, correo:str,
-                numeroDeTelefono:str) -> None:
+                numeroDeTelefono:str, curp:str) -> None:
         self.nombre = nombre
         self.correo = correo
         self.numeroDeTelefono = numeroDeTelefono
+        self.curp = curp
     
     def registrar(self:object, registo:list) -> None:
         pass
@@ -22,14 +23,25 @@ class PersonalMedico(Personal):
     atributo extra la especialidad del médico(str)"""
 
     def __init__(self:object, nombre:str, correo:str,
-                numeroDeTelefono:str, especialidad:str) -> None:
-        super().__init__(nombre, correo, numeroDeTelefono)
+                numeroDeTelefono:str, curp:str,
+                especialidad:str) -> None:
+        super().__init__(nombre, correo, numeroDeTelefono, curp)
         self.especialidad = especialidad
 
     def registrar(self: object, registo: list) -> None:
         """El método registrar almacena los nombres del personal
         médico en una lista"""
         registo.append(self.nombre)
+
+    def __str__(self:object) -> str:
+        return str([self.nombre, 
+                    self.correo,
+                    self.numeroDeTelefono,
+                    self.curp,
+                    self.especialidad])
+
+    def __getitem__(self:object, key:str) -> dict:
+        return getattr(self, key)
 
 
 class PersonalAdministrativo(Personal):

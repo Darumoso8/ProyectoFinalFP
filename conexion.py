@@ -1,5 +1,6 @@
 import psycopg2
 import psycopg2.extras
+from Personal import PersonalMedico
 from Producto import *
 
 hostname = "localhost"
@@ -29,8 +30,8 @@ def inicializarTabla():
                             codigo_De_Barras        text PRIMARY KEY NOT NULL, 
                             nombre                  text NOT NULL,
                             marca                   text NOT NULL,
-                            precio                  int NOT NULL,
-                            cantidad_En_Almacen     int NOT NULL) """
+                            precio                  int NOT NULL CHECK (precio > 0),
+                            cantidad_En_Almacen     int NOT NULL CHECK (cantidad_En_Almacen > 0)) """
 
             cur.execute(crear_tabla)
 
@@ -98,13 +99,14 @@ def agregarProductos(nombre, marca, precio, cantidad):
                                     nombre, marca, precio, \
                                     cantidad_En_Almacen) \
                                     VALUES (%s, %s, %s, %s, %s)"
-
+                  
                 insertar_valores = (
                                 codigo_de_barras, nombre, 
                                 marca, precio, cantidad)
-
-                cur.execute(insertar_informacion, insertar_valores)
-            
+                try:
+                    cur.execute(insertar_informacion, insertar_valores)
+                except:
+                    print("ERROR! Ingrese números válidos")
             else:
                 print("Ya existe un producto con este número de barras")
     conn.close()
@@ -124,12 +126,140 @@ def venderProducto(codigo_de_barras, lista, cantidad):
     
         with conn.cursor(cursor_factory = psycopg2.extras.DictCursor) as cur:
             if codigo_de_barras in codigosDeBarras:
-                cur.execute(actualizarProducto, (cantidad, codigo_de_barras,))
+                try:
+                    cur.execute(actualizarProducto, (cantidad, codigo_de_barras,))
+                except:
+                    print('ERROR! Ingrese números válidos')
             else:
                 print("Ese codigo de barras no existe")
 
-                
-            
+def comprarProducto(codigo_de_barras, lista, cantidad):
+    actualizarProducto = 'UPDATE productos SET cantidad_en_almacen = cantidad_en_almacen + %s WHERE codigo_de_barras = %s'
+    codigosDeBarras = []
+
+    for i in range(len(lista)):
+        codigosDeBarras.append(lista[i].codigoDeBarras)
+        
+    with psycopg2.connect(host = hostname, 
+                            dbname = database, 
+                            user = username, 
+                            password = pwd, 
+                            port = port_id) as conn:
+    
+        with conn.cursor(cursor_factory = psycopg2.extras.DictCursor) as cur:
+            if codigo_de_barras in codigosDeBarras:
+                try:
+                    cur.execute(actualizarProducto, (cantidad, codigo_de_barras,))
+                except:
+                    print('ERROR! Ingrese números válidos')
+            else:
+                print("Ese codigo de barras no existe")
+
+def inicializarTablaPersonalMedico():
+    with psycopg2.connect(host = hostname, 
+                            dbname = database, 
+                            user = username, 
+                            password = pwd, 
+                            port = port_id) as conn:
+
+        with conn.cursor(cursor_factory = psycopg2.extras.DictCursor) as cur:
+
+            cur.execute("DROP TABLE IF EXISTS personal")
+            crear_tabla = """ CREATE TABLE IF NOT EXISTS personal (
+                            curp                    text PRIMARY KEY NOT NULL, 
+                            nombre                  text NOT NULL,
+                            correo                  text NOT NULL,
+                            numero_de_telefono      text NOT NULL,
+                            especialidad            text NOT NULL )"""
+
+            cur.execute(crear_tabla)
+
+            insertar_informacion = "INSERT INTO personal (curp, \
+                                    nombre, correo, numero_de_telefono, \
+                                    especialidad) \
+                                    VALUES (%s, %s, %s, %s, %s)"
+
+            insertar_valores = [("CURP1",   "Javier Roman",        "correo@1.com",     "5621274871",    "Neurologo"),
+                                ("CURP2",   "Luisa Martinez",	   "correo@2.com",	   "5618095628",	"Cardiologo"),
+                                ("CURP3",	"Monica Maldonado",	   "correo@3.com",	   "5522914033",	"Nutriologo"),
+                                ("CURP4",	"Hector Quiroz",	   "correo@4.com",	   "5588032873",	"Practicante")]
+            cur.executemany(insertar_informacion, insertar_valores)                    
+    conn.close()
+
+def recopilarMedicos():
+    listaNueva = []
+    with psycopg2.connect(host = hostname, 
+                            dbname = database, 
+                            user = username, 
+                            password = pwd, 
+                            port = port_id) as conn:
+        with conn.cursor(cursor_factory = psycopg2.extras.DictCursor) as cur:
+            cur.execute("SELECT * FROM PERSONAL")      
+            for i in cur.fetchall():
+                ejemplo = PersonalMedico(
+                            i["nombre"],
+                            i["correo"],
+                            i["numero_de_telefono"], 
+                            i["curp"],
+                            i["especialidad"])
+                listaNueva.append(ejemplo)
+    conn.close()
+    return listaNueva
+
+def registrarNuevoMedico(curp, nombre, correo, numero_de_telefono, especialidad):
+    curps = []
+    lista = recopilarMedicos()
+    for i in range(len(lista)):
+        curps.append(lista[i].curp)
+
+    with psycopg2.connect(host = hostname, 
+                            dbname = database, 
+                            user = username, 
+                            password = pwd, 
+                            port = port_id) as conn:
+    
+        with conn.cursor(cursor_factory = psycopg2.extras.DictCursor) as cur:
+
+            if curp not in curps:
+                insertar_informacion = "INSERT INTO personal (curp, \
+                                    nombre, correo, numero_de_telefono, \
+                                    especialidad) \
+                                    VALUES (%s, %s, %s, %s, %s)"
+                  
+                insertar_valores = (
+                                curp, nombre, 
+                                correo, numero_de_telefono, especialidad)
+                try:
+                    cur.execute(insertar_informacion, insertar_valores)
+                except:
+                    print("ERROR! Ingrese valores válidos")
+            else:
+                print("Ya existe un medico con este curp")
+    conn.close()
+
+def darDeBajaMedico(curp, lista):
+    borrarMedico = 'DELETE FROM personal WHERE curp = %s'
+    curps = []
+
+    for i in range(len(lista)):
+        curps.append(lista[i].curp)
+    with psycopg2.connect(host = hostname, 
+                            dbname = database, 
+                            user = username, 
+                            password = pwd, 
+                            port = port_id) as conn:
+    
+        with conn.cursor(cursor_factory = psycopg2.extras.DictCursor) as cur:
+            if curp in curps:
+                try:
+                    cur.execute(borrarMedico, (curp,))
+                except:
+                    print('ERROR! Ingrese valores válidos')
+            else:
+                print("Ese curp no existe")
+
+
+
                 
             
 
