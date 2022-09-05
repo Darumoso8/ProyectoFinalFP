@@ -6,11 +6,6 @@ Se van a considerar todos los productos y bienes que se encuentran
 en una veterinaria, así como tambien llevar un control en el
 área de gestión de la misma.
 
-La nomenclatura para los códigos de barra es: NNMMPP, donde NN son
-las dos primeras letras del nombre, MM las dos primeras letras de la 
-marca y PP los dos primeros dígitos del precio (En caso de ser 
-unidigital se pone un 0 antes)
-
 Dentro de los bienes se considera todo aquel producto que pueda ser
 vendido y almacenado, como servicios se consideran servicios médicos
 y servicios de estética.
@@ -25,12 +20,21 @@ from Personal import *
 from conexion import *
 
 def validarEntero(x):
+    '''
+    Validar entero comprueba que se trate de algún valor
+    entero y lo retorna ya transformado
+    '''
     try:
         num = int(x)
         return num
     except:
         print("ERROR! Ingrese un numero") 
 
+'''
+En el siguiente bloque de código se llama a mandar las funciones
+para inicialiar las tablas en la BD, además se recopilan los datos
+de estas tablas y se guardan en lista con el nombre correspondiente
+'''
 inicializarTabla()
 inicializarTablaPersonalMedico()
 inicializarTablaPersonalAdministrativo()
@@ -39,16 +43,30 @@ medicos = recopilarMedicos()
 administrativos = recopilarAdministrativos()
 
 while True:
+    '''
+    Este menú recursivo es el principal, aqui se inicia sesión (En alguna
+    cuenta del personal administrativo) y tambien se sale del programa 
+    '''
     usuario = input("Para iniciar sesión ingrese su curp: ")
     contrasena = input("Ingrese su contraseña: ")
 
     correcto = False
     for i in administrativos:
+        '''
+        Aqui se comprueba si los valores de usuario y contraseña están
+        ligados a una cuenta administrativa, en caso de estarlo correcto 
+        se vuelve true, lo que significa que se puede entrar al menú de 
+        acciones
+        '''
         if i.curp == usuario and i.contrasena == contrasena:
             correcto = True
             usuarioActual = i
 
     while correcto:
+        '''
+        Una vez dentro del menú de acciones se puede accedere a los
+        distintos aspectos a gestionar
+        '''
         system("cls")
         print("1- Menu de medicos")
         print("2- Menu de administrativos") 
@@ -59,6 +77,10 @@ while True:
         if opcionMenu == '1':
             system("cls")
             while True:
+                '''
+                En esta parte se encuentra la gestión del personal
+                médico
+                '''
                 print("1- Dar informacion de algun medico")
                 print("2- Ver medicos")
                 print("3- Gestionar opciones de administrador")
@@ -82,6 +104,11 @@ while True:
                         print(i, "\n")
 
                 elif (usuario == 'CURP1') and (opcion == '3'):
+                    '''
+                    En esta parte únicamente puede ingresar el administrador
+                    principal, de esta forma cuenta con acciones extras 
+                    desplegadas en otro menú
+                    '''
                     system("cls")
                     print("1- Agregar medico")
                     print("2- Dar de baja a un medico")
@@ -117,6 +144,11 @@ while True:
         elif opcionMenu == '2':
             system("cls")
             while True:
+                '''
+                En esta parte se encuentra la gestión del personal
+                administrativo, todo aquel que no sea el admin principal
+                únicamente puede cambiar su contraseña.
+                '''
                 print("1- Cambiar contraseña")
                 print("2- Gestionar opciones de administrador")
                 print("3- Regresar")
@@ -128,6 +160,11 @@ while True:
                     administrativos = recopilarAdministrativos()
 
                 elif (usuario == 'CURP1') and (opcion == '2'):
+                    '''
+                    En esta parte únicamente puede ingresar el administrador
+                    principal, de esta forma cuenta con acciones extras 
+                    desplegadas en otro menú
+                    '''
                     system("cls")
                     print("1- Registrar administrativo")
                     print("2- Dar de baja a un administrativo")
@@ -184,6 +221,11 @@ while True:
         elif opcionMenu == '3':
             system("cls")
             while True:
+                '''
+                En esta parte se encuentra la gestión de los productos
+                disponibles, cualquier usuario puede agregar, vender, 
+                abastecer, comprobar y ver el almacén
+                '''
                 print("1- Agregar producto")
                 print("2- Vender producto")
                 print("3- Abastecer producto")

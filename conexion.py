@@ -14,6 +14,7 @@ pwd = "Hecyor1234"
 port_id = 5432
 lista = []
 
+# Las siguientes funciones se encargan del funcionamiento de los productos
 def crearCodigoDeBarras(nombre, marca, precio):
     '''
     La función crea el código de barras siguiendo la siguiente regla: 
@@ -28,7 +29,10 @@ def crearCodigoDeBarras(nombre, marca, precio):
 
 def inicializarTabla():
     '''
-    
+    Esta funcion se conecta a la base de datos y crea una tabla 
+    llamada productos (En caso de existir la borra y la crea de nuevo),
+    además la llena con elementos que simulan serparte de un almacén
+    ya existente
     '''
     with psycopg2.connect(host = hostname, 
                             dbname = database, 
@@ -72,6 +76,11 @@ def inicializarTabla():
     conn.close()
 
 def recopilarDatos():
+    ''' 
+    Esta función toma los valores de la tabla y los instancia como 
+    objetos de la clase Producto, además los guarda en una lista y
+    regresa esa misma lista
+    '''
     listaNueva = []
     with psycopg2.connect(host = hostname, 
                             dbname = database, 
@@ -93,6 +102,13 @@ def recopilarDatos():
     return listaNueva
 
 def agregarProductos(nombre, marca, precio, cantidad):
+    '''
+    Esta funcion agrega un producto nuevo a la base de datos, con
+    ayuda de la función crearCodigoDeBarras le crea su codigo de barras
+    , luego crea una lista con todos los codigos de barra para 
+    comprobar que no sea un codigo repetido, de no estar repetido, 
+    inserta el nuevo producto
+    '''
     codigo_de_barras = crearCodigoDeBarras(nombre, marca, precio)
     codigosDeBarras = []
     lista = recopilarDatos()
@@ -125,6 +141,13 @@ def agregarProductos(nombre, marca, precio, cantidad):
     conn.close()
             
 def venderProducto(codigo_de_barras, lista, cantidad):
+    '''
+    Esta función actualiza la cantidad en almacén de un producto dado, 
+    tambien hace la comprobación que el código de barras exista, en
+    caso de existir le resta la cantidad solicitada al producto, 
+    sin embargo la cantidad de producto restante no puede ser negativa, 
+    en caso de serlo se produce una excepción
+    '''
     actualizarProducto = 'UPDATE productos SET cantidad_en_almacen = cantidad_en_almacen - %s WHERE codigo_de_barras = %s'
     codigosDeBarras = []
 
@@ -148,6 +171,12 @@ def venderProducto(codigo_de_barras, lista, cantidad):
     conn.close()
 
 def comprarProducto(codigo_de_barras, lista, cantidad):
+    '''
+    Esta funcion simula abastercer la cantidad en almacen de un 
+    producto, crea una lista con todos los codigos de barra y en 
+    caso de existir el solicitado le suma la cantidad requerida al
+    almacen
+    '''
     actualizarProducto = 'UPDATE productos SET cantidad_en_almacen = cantidad_en_almacen + %s WHERE codigo_de_barras = %s'
     codigosDeBarras = []
 
@@ -170,7 +199,14 @@ def comprarProducto(codigo_de_barras, lista, cantidad):
                 print("Ese codigo de barras no existe")
     conn.close()
 
+
+# Las siguientes funciones se encargan de la gestión del personal médico
 def inicializarTablaPersonalMedico():
+    '''
+    Esta función crea una tabla llamada personal (En caso de existir
+    la borra y la crea de nuevo) además inserta valores predeterminados
+    simulando médicos que ya trabajan ahí
+    '''
     with psycopg2.connect(host = hostname, 
                             dbname = database, 
                             user = username, 
@@ -202,6 +238,11 @@ def inicializarTablaPersonalMedico():
     conn.close()
 
 def recopilarMedicos():
+    ''' 
+    Esta función toma los valores de la tabla y los instancia como 
+    objetos de la clase PersonalMédico, además los guarda en 
+    una lista y regresa esa misma lista
+    '''    
     listaNueva = []
     with psycopg2.connect(host = hostname, 
                             dbname = database, 
@@ -222,6 +263,12 @@ def recopilarMedicos():
     return listaNueva
 
 def registrarNuevoMedico(curp, nombre, correo, numero_de_telefono, especialidad):
+    '''
+    Crea una lista llamada curps donde se almacenan todas las curps,
+    esta se compara con el curp ingresado como argumento para verificar
+    que sea un curp válido, en caso de serlo se agrega el nuevo médico 
+    a la BD.
+    '''
     curps = []
     lista = recopilarMedicos()
     for i in range(len(lista)):
@@ -253,6 +300,12 @@ def registrarNuevoMedico(curp, nombre, correo, numero_de_telefono, especialidad)
     conn.close()
 
 def darDeBajaMedico(curp, lista):
+    '''
+    Esta función eleminia al médico cuyo curp coincida, 
+    crea una lista vacía llamada curps la cual almacena todas
+    las curps actuales, en caso de existir la curp, elimina a ese 
+    méidco de la BD. 
+    '''
     borrarMedico = 'DELETE FROM personal WHERE curp = %s'
     curps = []
 
@@ -274,7 +327,14 @@ def darDeBajaMedico(curp, lista):
                 print("Ese curp no existe")
     conn.close()
 
+# Las siguientes funciones se encargan de la gestión del personal administratico
+
 def inicializarTablaPersonalAdministrativo():
+    '''
+    Esta función crea una tabla llamada personalad (En caso de existir
+    la borra y la crea de nuevo) además inserta valores predeterminados
+    simulando administrativos que ya trabajan ahí.
+    '''
     with psycopg2.connect(host = hostname, 
                             dbname = database, 
                             user = username, 
@@ -305,6 +365,12 @@ def inicializarTablaPersonalAdministrativo():
     conn.close()
 
 def recopilarAdministrativos():
+    '''
+    La función recopilarAdministrativos toma los valores de la tabla 
+    personalad y los instancia como objetos de la clase 
+    PersonalAdministrativo, además los guarda en una lista y regresa
+    esa misma lista
+    '''
     listaNueva = []
     with psycopg2.connect(host = hostname, 
                             dbname = database, 
@@ -325,6 +391,12 @@ def recopilarAdministrativos():
     return listaNueva
 
 def registrarNuevoAdministrativo(curp, nombre, correo, numero_de_telefono, contrasena):
+    '''
+    Crea una lista llamada curps donde se almacenan todas las curps de
+    los administrativos, esta se compara con el curp ingresado como 
+    argumento para verificar que sea un curp válido, en caso de 
+    serlo se agrega el nuevo administrativo a la BD.
+    '''
     curps = []
     lista = recopilarAdministrativos()
     for i in range(len(lista)):
@@ -356,6 +428,12 @@ def registrarNuevoAdministrativo(curp, nombre, correo, numero_de_telefono, contr
     conn.close()
 
 def darDeBajaAdministrativo(curp, lista):
+    '''
+    Esta función elimina al administrativo cuyo curp coincida, 
+    crea una lista vacía llamada curps la cual almacena todas
+    las curps actuales, en caso de existir la curp, elimina a ese 
+    administrativo de la BD. 
+    '''
     borrarAdministrativo = 'DELETE FROM personalad WHERE curp = %s'
     curps = []
 
@@ -379,6 +457,10 @@ def darDeBajaAdministrativo(curp, lista):
     conn.close()
 
 def cambiarContrasena(curp, nuevaContrasena):
+    '''
+    Esta función cambia la contraseña del administrativo con el curp
+    dado y la reemplaza con la contraseña nueva
+    '''
     actualizarPersonalad = 'UPDATE personalad SET contrasena = %s WHERE curp = %s'
   
     with psycopg2.connect(host = hostname, 
